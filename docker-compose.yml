@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   db:
     image: postgres:latest
@@ -10,4 +11,17 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+      
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - crm_network
+
+
+volumes:
+  postgres_data:
+
+networks:
+  crm_network:
+    driver: bridge
