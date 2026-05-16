@@ -1,0 +1,19 @@
+# === Frontend Ignores ===
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+
+# === Backend Ignores ===
+backend/*.exe
+backend/*.exe~
+backend/*.dll
+backend/*.so
+backend/*.dylib
+backend/backend
+
+# === Root / System Ignores ===
+.env
+.env.example
+.DS_Store
+Thumbs.db
