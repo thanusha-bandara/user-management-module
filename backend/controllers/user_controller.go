@@ -22,7 +22,7 @@ func RegisterUser(c *gin.Context) {
 	// 1. Password Encrypt
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Password hash කිරීමට අපොහොසත් වුණා"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot encrypt password"})
 		return
 	}
 
@@ -33,7 +33,7 @@ func RegisterUser(c *gin.Context) {
 	err = config.DB.QueryRow(context.Background(), query, input.Username, input.Email, string(hashedPassword), input.RoleID).Scan(&newUserID)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database එකට ඇතුළත් කරන්න බැරි වුණා (Email එක දැනටමත් ඇති)"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot insert user into database"})
 		return
 	}
 
