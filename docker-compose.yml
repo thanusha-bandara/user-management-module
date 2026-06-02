@@ -1,8 +1,9 @@
 version: '3.8'
 
 services:
+  # 1. Database
   db:
-    image: postgres:latest
+    image: postgres:16-alpine
     container_name: user_mgmt_db
     environment:
       POSTGRES_USER: myuser
@@ -11,13 +12,42 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-      
       - postgres_data:/var/lib/postgresql/data
     networks:
       - crm_network
 
+  # 2. Go Backend 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: user_mgmt_backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=db             
+      - DB_PORT=5432
+      - DB_USER=myuser
+      - DB_PASSWORD=mypassword
+      - DB_NAME=user_db
+    depends_on:
+      - db                     
+    networks:
+      - crm_network
+
+  # 3. Vue.js Frontend 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: user_mgmt_frontend
+    ports:
+      - "80:80"                
+    depends_on:
+      - backend
+    networks:
+      - crm_network
 
 volumes:
   postgres_data:
