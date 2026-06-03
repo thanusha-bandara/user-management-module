@@ -11,7 +11,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// JWT සඳහා රහස්‍ය කී එක (Production වලදී මෙවැනි ඒවා .env එකට දමයි)
 var JWTKey = []byte("CRM_SUPER_SECRET_KEY_2026")
 
 type LoginInput struct {
@@ -19,11 +18,10 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
-// LoginUser: පරිශීලකයා පද්ධතියට ඇතුළත් කරගෙන JWT Token එකක් ලබා දීම
 func LoginUser(c *gin.Context) {
 	var input LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "කරුණාකර නිවැරදි Email සහ Password ඇතුළත් කරන්න"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "enter valid email and password"})
 		return
 	}
 
@@ -33,28 +31,28 @@ func LoginUser(c *gin.Context) {
 	var roleID int
 	var status string
 
-	// Database එකෙන් පරිශීලකයා සෙවීම
+	// search user
 	query := `SELECT user_id, username, password_hash, role_id, status FROM users WHERE email = $1`
 	err := config.DB.QueryRow(context.Background(), query, input.Email).Scan(&userID, &username, &passwordHash, &roleID, &status)
 
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "ඇතුළත් කළ Email ලිපිනය පද්ධතියේ නොමැත"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "no user found with the provided email"})
 		return
 	}
 
 	if status != "active" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "ඔබගේ ගිණුම තාවකාලිකව අක්‍රීය කර ඇත"})
+		c.JSON(http.StatusForbidden, gin.H{"error": "your account is temporarily disabled"})
 		return
 	}
 
-	// Password එක සසඳා බැලීම
+	// compare the provided password
 	err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(input.Password))
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "ඇතුළත් කළ මුරපදය (Password) වැරදියි"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "wrong password"})
 		return
 	}
 
-	// JWT Claims සැකසීම (Valid for 24 Hours)
+	// JWT 
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := jwt.MapClaims{
 		"user_id":  userID,
@@ -66,12 +64,12 @@ func LoginUser(c *gin.Context) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(JWTKey)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "JWT Token එක සෑදීමට අපොහොසත් වුණා"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create JWT token"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":  "ලොගින් වීම සාර්ථකයි! 🎉",
+		"message":  "login successful! ",
 		"token":    tokenString,
 		"user_id":  userID,
 		"username": username,
@@ -79,7 +77,7 @@ func LoginUser(c *gin.Context) {
 	})
 }
 
-// LogoutUser: පරිශීලකයා පද්ධතියෙන් ඉවත් වීම (Frontend එකෙන් Token එක අයින් කිරීමට අමතරව ආරක්ෂාවට)
+// Logout
 func LogoutUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "සාර්ථකව පද්ධතියෙන් ඉවත් වුණා! 👋"})
+	c.JSON(http.StatusOK, gin.H{"message": "logout successful!"})
 }

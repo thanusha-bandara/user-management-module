@@ -9,20 +9,19 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// AuthRequired: ඕනෑම ආරක්ෂිත API එකක් රන් වීමට කලින් JWT එක චෙක් කරන වැට
+// AuthRequired
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "පද්ධතියට ඇතුළු වීමට අවසර නැත (Token Missing)"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: Token missing"})
 			c.Abort()
 			return
 		}
 
-		// Bearer <token> කෑල්ල වෙන් කර ගැනීම
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "වැරදි Token Format එකක්"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Token Format"})
 			c.Abort()
 			return
 		}
@@ -35,19 +34,19 @@ func AuthRequired() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "ඔබගේ Token එක කල් ඉකුත් වී ඇත හෝ අවලංගුයි"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: Invalid token"})
 			c.Abort()
 			return
 		}
 
-		// ඉදිරි කෝඩ් වලට පාවිච්චි කරන්න Claims ටික Context එකට දැමීම
+		// Set user_id and role_id
 		c.Set("user_id", claims["user_id"])
 		c.Set("role_id", claims["role_id"])
 		c.Next()
 	}
 }
 
-// AdminRequired: Check if the user is an Admin (role_id = 1)
+// AdminRequired
 func AdminRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roleID, exists := c.Get("role_id")
@@ -57,7 +56,6 @@ func AdminRequired() gin.HandlerFunc {
 			return
 		}
 
-		// claims["role_id"] might be float64 after JSON parsing in JWT
 		var roleInt int
 		switch v := roleID.(type) {
 		case float64:
