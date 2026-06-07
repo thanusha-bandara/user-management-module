@@ -1,0 +1,6 @@
+vendor
+.git
+.vscode
+.env
+main
+main.exe

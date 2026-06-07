@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. Database
+  
   db:
     image: postgres:16-alpine
     container_name: user_mgmt_db
@@ -17,7 +17,7 @@ services:
     networks:
       - crm_network
 
-  # 2. Go Backend 
+  
   backend:
     build:
       context: ./backend
@@ -26,7 +26,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DB_HOST=db             
+      - DB_HOST=db            
       - DB_PORT=5432
       - DB_USER=myuser
       - DB_PASSWORD=mypassword
@@ -36,14 +36,14 @@ services:
     networks:
       - crm_network
 
-  # 3. Vue.js Frontend 
+  
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: user_mgmt_frontend
     ports:
-      - "80:80"                
+      - "80:80"              
     depends_on:
       - backend
     networks:

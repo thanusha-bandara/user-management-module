@@ -40,7 +40,7 @@ func RegisterUser(c *gin.Context) {
 		println("Database Error:", err.Error())
 
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Failed to insert user into database",
+			"error":   "failed to insert user into database",
 			"details": err.Error(),
 		})
 		return

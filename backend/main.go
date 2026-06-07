@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CORSMiddleware: Frontend (Vue.js)
+// CORSMiddleware
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -25,13 +25,12 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func main() {
-	// 1. connect to database
+	// connect to the database
 	config.ConnectDB()
 
 	r := gin.Default()
 	r.Use(CORSMiddleware())
 
-	// 2. Public Endpoints - Registration, Login, Logout
 	authRoutes := r.Group("/api/v1/auth")
 	{
 		authRoutes.POST("/register", controllers.RegisterUser)
@@ -39,7 +38,6 @@ func main() {
 		authRoutes.POST("/logout", controllers.LogoutUser)
 	}
 
-	// 3. Protected Endpoints - Require JWT Token
 	protectedRoutes := r.Group("/api/v1")
 	protectedRoutes.Use(middleware.AuthRequired())
 	{
@@ -57,6 +55,5 @@ func main() {
 		}
 	}
 
-	
 	r.Run(":8080")
 }

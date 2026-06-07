@@ -19,6 +19,7 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
+		// Bearer
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Token Format"})
@@ -39,14 +40,14 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
-		// Set user_id and role_id
+		// Set user_id and role_id in context for further use in handlers
 		c.Set("user_id", claims["user_id"])
 		c.Set("role_id", claims["role_id"])
 		c.Next()
 	}
 }
 
-// AdminRequired
+// AdminRequired: Check if the user is an Admin (role_id = 1)
 func AdminRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roleID, exists := c.Get("role_id")
@@ -56,6 +57,7 @@ func AdminRequired() gin.HandlerFunc {
 			return
 		}
 
+		// claims["role_id"] might be float64 after JSON parsing in JWT
 		var roleInt int
 		switch v := roleID.(type) {
 		case float64:

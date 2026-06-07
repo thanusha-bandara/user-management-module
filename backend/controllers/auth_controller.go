@@ -31,7 +31,7 @@ func LoginUser(c *gin.Context) {
 	var roleID int
 	var status string
 
-	// search user
+	// search user by email
 	query := `SELECT user_id, username, password_hash, role_id, status FROM users WHERE email = $1`
 	err := config.DB.QueryRow(context.Background(), query, input.Email).Scan(&userID, &username, &passwordHash, &roleID, &status)
 
@@ -45,14 +45,14 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	// compare the provided password
+	// compare the provided password with the stored hash
 	err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(input.Password))
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "wrong password"})
 		return
 	}
 
-	// JWT 
+	// JWT create
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := jwt.MapClaims{
 		"user_id":  userID,
@@ -77,7 +77,7 @@ func LoginUser(c *gin.Context) {
 	})
 }
 
-// Logout
+// LogoutUser
 func LogoutUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "logout successful!"})
+	c.JSON(http.StatusOK, gin.H{"message": "logout successful! 👋"})
 }
